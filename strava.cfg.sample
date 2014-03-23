@@ -1,0 +1,12 @@
+[strava]
+
+# get these values from https://www.strava.com/settings/api
+client_id =
+client_secret = 
+access_token = 
+redirect_uri = localhost
+
+# once you have received the code, you can put it in your config file
+# so that you are able use it for cron automated jobs
+[user]
+access_token =

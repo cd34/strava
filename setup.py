@@ -5,8 +5,7 @@ from setuptools import setup
 
 version = '1.0'
 
-install_requires = [
-]
+install_requires = ['requests', 'requests-oauthlib']
 
 tests_require = install_requires + ['Sphinx', 'docutils',
                                     'virtualenv', 'nose', 'coverage']
