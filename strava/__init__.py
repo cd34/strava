@@ -33,9 +33,8 @@ class StravaObject(object):
     access_token = None
  
     def __init__(self, **kwargs):
-        #super(StravaObject, self).__init__(**kwargs)
-        if not self.access_token and kwargs.get('access_token'):
-            self.access_token = kwargs.pop('access_token', None)
+        if kwargs.get('access_token'):
+            self.access_token = kwargs.get('access_token')
 
     #noinspection PyUnresolvedReferences
     def load(self, url, key=None):
@@ -47,7 +46,6 @@ class StravaObject(object):
                     headers=headers)
                 rsp = urllib2.urlopen(req)
             except urllib2.HTTPError as e:
-                print BASE_API + url, headers
                 raise APIError("%s: request failed: %s" % (url, e))
         else:
             try:
@@ -63,7 +61,6 @@ class StravaObject(object):
             #else:
             return json.loads(txt)
         except (ValueError, KeyError) as e:
-            print 't:', json.loads(txt)
             raise APIError("%s: parsing response failed: %s" % (url, e))
 
     @property
@@ -84,6 +81,8 @@ class Athlete(StravaObject):
     """
     def __init__(self, **kwargs):
         super(Athlete, self).__init__(**kwargs)
+        if kwargs.get('access_token'):
+            self.access_token = kwargs.get('access_token')
         self._url = '/athlete'
 
     @property
@@ -105,7 +104,8 @@ class Athlete(StravaObject):
         #    url += "&offset=%s" % offset
             
         for activity in self.load(self._url + '/activities'):
-            out.append(Activity(id=activity["id"], name=activity["name"]))
+            out.append(Activity(id=activity["id"], name=activity["name"],
+                access_token=self.access_token))
 
         return out
 
@@ -144,7 +144,8 @@ class Activity(StravaObject):
     @property
     def detail(self):
         if not self._detail:
-            self._detail = ActivityDetail(id=self.id)
+            self._detail = ActivityDetail(id=self.id,
+                access_token=self.access_token)
         return self._detail
 
     @property
