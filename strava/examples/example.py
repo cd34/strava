@@ -21,11 +21,11 @@ Once we've gotten the Athlete's object, we can then look at various
 statistics - number of activities and total moving time are shown below.
 By default, we only look at the last 7 days.
 """
-stats = st.activity_stats()
+#stats = st.activity_stats()
 
-print('Ridden %d activites' % stats['activities'])
-print('Total moving time: %f minutes' %
-      (float(stats['moving_time']) / 60.0))
+#print('Ridden %d activites' % stats['activities'])
+#print('Total moving time: %f minutes' %
+#      (float(stats['moving_time']) / 60.0))
 
 """
 We can then iterate through the activities, and further through the segments
@@ -39,8 +39,9 @@ for activity in st.activities():
     # m/s * 2.23694 = mph
     print('Average speed: %.1f mph' % (activity.detail.average_speed * 2.23694))
     print('Average watts: %d' % activity.detail.average_watts)
-    #for segment in activity.segments:
-    #    print('  Segment: %s\n    Moving Time: %f minutes\n    Average '
-    #          'Speed: %f mph' %
-    #          (segment.name, segment.detail.moving_time / 60.0,
-    #           segment.detail.average_speed * 0.000621))
+    for segment in activity.segments:
+        print segment.__dict__
+        print('  Segment: %s\n    Moving Time: %f minutes\n    Average '
+              'Speed: %f mph' %
+              (segment.name, segment.detail.moving_time / 60.0,
+               segment.detail.average_speed * 0.000621))

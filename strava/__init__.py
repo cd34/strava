@@ -11,7 +11,7 @@ __license__   = "Apache"
 __version__   = "1.0"
 
 
-BASE_API = "http://www.strava.com/api/v3"
+BASE_API = "https://www.strava.com/api/v3"
 
 from collections import defaultdict
 from datetime import date, timedelta
@@ -59,6 +59,7 @@ class StravaObject(object):
             #if key:
             #    return json.loads(txt)[key]
             #else:
+            #print txt
             return json.loads(txt)
         except (ValueError, KeyError) as e:
             raise APIError("%s: parsing response failed: %s" % (url, e))
@@ -151,8 +152,9 @@ class Activity(StravaObject):
     @property
     def segments(self):
         if not self._segments:
-            for effort in self.load("/activities/%s/efforts" % self.id):
-                self._segments.append(Segment(effort))
+            for effort in self._detail.segment_efforts:
+                loaded_effort = self.load('/segment_efforts/%s' % effort['id'])
+                self._segments.append(Segment(effort=effort))
         return self._segments
 
 
@@ -218,6 +220,10 @@ class ActivityDetail(StravaObject):
     def trainer(self):
         return self._attr["trainer"]
 
+    @property
+    def segment_efforts(self):
+        return self._attr["segment_efforts"]
+
 
 class Segment(StravaObject):
     """Information about a single activity segment.
@@ -234,10 +240,10 @@ class Segment(StravaObject):
     load the "detail" property.  It's lazy-loaded, so if you just care about the
     segment name or ID, you won't take the it.
     """
-    def __init__(self, attr):
-        super(Segment, self).__init__(attr["id"])
-        self._segment = attr["segment"]
-        self._time = attr["elapsed_time"]
+    def __init__(self, **kwargs):
+        super(Segment, self).__init__(**kwargs)
+        self._effort = kwargs['effort']
+        #self._time = attr["elapsed_time"]
         self._detail = None
         
     @property
@@ -246,18 +252,21 @@ class Segment(StravaObject):
     
     @property
     def name(self):
-        return self._segment["name"]
+        return self._effort["name"]
 
     @property
     def detail(self):
         if not self._detail:
-            self._detail = SegmentDetail(self._segment["id"], self.id)
+            self._detail = SegmentDetail(effort=self._effort["id"],
+                segment_id=self._effort['id'])
         return self._detail
 
 
 class SegmentDetail(StravaObject):
-    def __init__(self, segment_id, effort_id):
-        super(SegmentDetail, self).__init__(segment_id)
+    #def __init__(self, segment_id, effort_id):
+    #    super(SegmentDetail, self).__init__(segment_id)
+    def __init__(self, **kwargs):
+        super(SegmentDetail, self).__init__(**kwargs)
         self._effort_attr = self.load("/efforts/%s" % effort_id, "effort")
         self._segment_attr = self.load("/segments/%s" % segment_id, "segment")
 
