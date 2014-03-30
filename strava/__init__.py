@@ -11,7 +11,7 @@ __license__   = "Apache"
 __version__   = "1.0"
 
 
-BASE_API = "https://www.strava.com/api/v3"
+BASE_API = 'https://www.strava.com/api/v3'
 
 from collections import defaultdict
 from datetime import date, timedelta
@@ -46,23 +46,19 @@ class StravaObject(object):
                     headers=headers)
                 rsp = urllib2.urlopen(req)
             except urllib2.HTTPError as e:
-                raise APIError("%s: request failed: %s" % (url, e))
+                raise APIError('%s: request failed: %s' % (url, e))
         else:
             try:
                 rsp = urllib.request.urlopen(BASE_API + url,
                     headers=headers)
             except urllib.error.HTTPError as e:
-                raise APIError("%s: request failed: %s" % (url, e))
+                raise APIError('%s: request failed: %s' % (url, e))
         txt = rsp.read().decode('utf-8')
 
         try:
-            #if key:
-            #    return json.loads(txt)[key]
-            #else:
-            #print txt
             return json.loads(txt)
         except (ValueError, KeyError) as e:
-            raise APIError("%s: parsing response failed: %s" % (url, e))
+            raise APIError('%s: parsing response failed: %s' % (url, e))
 
     @property
     def id(self):
@@ -105,7 +101,7 @@ class Athlete(StravaObject):
         #    url += "&offset=%s" % offset
             
         for activity in self.load(self._url + '/activities'):
-            out.append(Activity(id=activity["id"], name=activity["name"],
+            out.append(Activity(id=activity['id'], name=activity['name'],
                 access_token=self.access_token))
 
         return out
@@ -116,9 +112,9 @@ class Athlete(StravaObject):
         stats = defaultdict(float)
         
         for activity in self.activities(start_date=start):
-            stats["activities"] += 1
-            stats["moving_time"] += activity.detail.moving_time
-            stats["distance"] += activity.detail.distance
+            stats['activities'] += 1
+            stats['moving_time'] += activity.detail.moving_time
+            stats['distance'] += activity.detail.distance
 
         return stats
     
@@ -162,67 +158,67 @@ class ActivityDetail(StravaObject):
     
     def __init__(self, **kwargs):
         super(ActivityDetail, self).__init__(**kwargs)
-        self._attr = self.load("/activities/%s" % kwargs['id'], 'activity')
+        self._attr = self.load('/activities/%s' % kwargs['id'], 'activity')
 
     @property
     def athlete(self):
-        return self._attr["athlete"]["name"]
+        return self._attr['athlete']['name']
 
     @property
     def athlete_id(self):
-        return self._attr["athlete"]["id"]
+        return self._attr['athlete']['id']
 
     @property
     def bike(self):
-        return self._attr["bike"]["name"]
+        return self._attr['bike']['name']
 
     @property
     def bike_id(self):
-        return self._attr["bike"]["id"]
+        return self._attr['bike']['id']
 
     @property
     def location(self):
-        return self._attr["location"]
+        return self._attr['location']
 
     @property
     def distance(self):
-        return self._attr["distance"]
+        return self._attr['distance']
 
     @property
     def average_speed(self):
-        return self._attr["average_speed"]
+        return self._attr['average_speed']
 
     @property
     def moving_time(self):
-        return self._attr["moving_time"]
+        return self._attr['moving_time']
 
     @property
     def average_watts(self):
-        return self._attr["average_watts"]
+        return self._attr['average_watts']
 
     @property
     def maximum_speed(self):
-        return self._attr["maximum_speed"]
+        return self._attr['maximum_speed']
 
     @property
     def elevation_gain(self):
-        return self._attr["elevation_gain"]
+        return self._attr['elevation_gain']
 
     @property
     def description(self):
-        return self._attr["description"]
+        return self._attr['description']
 
     @property
     def commute(self):
-        return self._attr["commute"]
+        return self._attr['commute']
 
     @property
     def trainer(self):
-        return self._attr["trainer"]
+        return self._attr['trainer']
 
     @property
     def segment_efforts(self):
-        return self._attr["segment_efforts"]
+        return self._attr['segment_efforts']
 
 
 class Segment(StravaObject):
@@ -233,7 +229,8 @@ class Segment(StravaObject):
     round-trip if all we care about is the ID or name of the segment.
 
     Note that this class combines the "effort" and "segment" as Strava defines
-    them. They both ultimately pertain to a given portion of a activity, so it makes
+    them. They both ultimately pertain to a given portion of a activity, so it
+    makes
     sense to access them both through the same interface.
 
     This does have the side effect, however, of requiring two API round-trips to
@@ -243,67 +240,63 @@ class Segment(StravaObject):
     def __init__(self, **kwargs):
         super(Segment, self).__init__(**kwargs)
         self._effort = kwargs['effort']
-        #self._time = attr["elapsed_time"]
         self._detail = None
         
     @property
     def time(self):
-        return self._time
+        return self._effort['start_date_local']
     
     @property
     def name(self):
-        return self._effort["name"]
+        return self._effort['name']
 
     @property
     def detail(self):
         if not self._detail:
-            self._detail = SegmentDetail(effort=self._effort["id"],
-                segment_id=self._effort['id'])
+            self._detail = SegmentDetail(effort=self._effort)
         return self._detail
 
 
 class SegmentDetail(StravaObject):
-    #def __init__(self, segment_id, effort_id):
-    #    super(SegmentDetail, self).__init__(segment_id)
     def __init__(self, **kwargs):
         super(SegmentDetail, self).__init__(**kwargs)
-        self._effort_attr = self.load("/efforts/%s" % effort_id, "effort")
-        self._segment_attr = self.load("/segments/%s" % segment_id, "segment")
+        self._effort = kwargs['effort']
 
     @property
     def distance(self):
-        return self._segment_attr["distance"]
+        return self._effort['segment']['distance']
 
     @property
     def elapsed_time(self):
-        return self._effort_attr["elapsedTime"]
+        return self._effort['segment']['elapsed_time']
 
     @property
     def moving_time(self):
-        return self._effort_attr["movingTime"]
+        return self._effort['moving_time']
 
     @property
     def average_speed(self):
-        return self._effort_attr["averageSpeed"]
+        return self._effort['segment']['distance'] / \
+            self._effort['elapsed_time'] 
 
     @property
     def maximum_speed(self):
-        return self._effort_attr["maximumSpeed"]
+        return self._effort['segment']['maximum_speed']
 
     @property
     def average_watts(self):
-        return self._effort_attr["averageWatts"]
+        return self._effort['segment']['average_watts']
 
     @property
     def average_grade(self):
-        return self._segment_attr["averageGrade"]
+        return self._segment['segment']['average_grade']
 
     @property
     def climb_category(self):
-        return self._segment_attr["climbCategory"]
+        return self._segment['segment']['climb_category']
 
     @property
     def elevations(self):
-        return (self._segment_attr["elevationLow"],
-                self._segment_attr["elevationHigh"],
-                self._segment_attr["elevationGain"])
+        return (self._segment['segment']['elevation_low'],
+                self._segment['segment']['elevation_high'],
+                self._segment['segment']['elevation_gain'])
