@@ -149,7 +149,6 @@ class Activity(StravaObject):
     def segments(self):
         if not self._segments:
             for effort in self._detail.segment_efforts:
-                loaded_effort = self.load('/segment_efforts/%s' % effort['id'])
                 self._segments.append(Segment(effort=effort))
         return self._segments
 
