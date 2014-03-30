@@ -73,8 +73,8 @@ class Athlete(StravaObject):
     """Encapsulates data about a single Athlete.
 
     Note that the athlete's name is NOT available through this API. You have to
-    load a activity or effort to get that data from the service, and we don't want
-    to make that heavy a query at the top level.
+    load a activity or effort to get that data from the service, and we don't
+    want to make that heavy a query at the top level.
     """
     def __init__(self, **kwargs):
         super(Athlete, self).__init__(**kwargs)
