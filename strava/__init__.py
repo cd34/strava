@@ -117,6 +117,32 @@ class Athlete(StravaObject):
             stats['distance'] += activity.detail.distance
 
         return stats
+
+    def friends(self):
+        """
+GET https://www.strava.com/api/v3/athlete/friends
+GET https://www.strava.com/api/v3/athletes/:id/friends
+        """
+        pass
+    
+    def followers(self):
+        """
+GET https://www.strava.com/api/v3/athlete/followers
+GET https://www.strava.com/api/v3/athletes/:id/followers
+        """
+        pass
+    
+    def both_following(self):
+        """
+GET https://www.strava.com/api/v3/athletes/:id/both-following
+        """
+        pass
+    
+    def kom_qom_crs(self):
+        """
+GET https://www.strava.com/api/v3/athletes/:id/koms
+        """
+        pass
     
         
 class Activity(StravaObject):
@@ -229,8 +255,7 @@ class Segment(StravaObject):
 
     Note that this class combines the "effort" and "segment" as Strava defines
     them. They both ultimately pertain to a given portion of a activity, so it
-    makes
-    sense to access them both through the same interface.
+    makes sense to access them both through the same interface.
 
     This does have the side effect, however, of requiring two API round-trips to
     load the "detail" property.  It's lazy-loaded, so if you just care about the
