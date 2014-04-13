@@ -27,7 +27,7 @@ if len(sys.argv) == 2:
               'code':sys.argv[1],
     }
     r = requests.post(url, params=params)
-    print r.json()['access_token']
+    print 'access_token = {token}'.format(token=r.json()['access_token'])
 else:
     print """
 You must specify a code, i.e. {script} 1234

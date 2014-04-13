@@ -263,8 +263,11 @@ class Segment(StravaObject):
     """
     def __init__(self, **kwargs):
         super(Segment, self).__init__(**kwargs)
+        if kwargs.get('access_token'):
+            self.access_token = kwargs.get('access_token')
         self._effort = kwargs['effort']
         self._detail = None
+
         
     @property
     def time(self):
@@ -277,7 +280,8 @@ class Segment(StravaObject):
     @property
     def detail(self):
         if not self._detail:
-            self._detail = SegmentDetail(effort=self._effort)
+            self._detail = SegmentDetail(effort=self._effort, \
+            access_token=self.access_token)
         return self._detail
 
 
@@ -285,6 +289,7 @@ class SegmentDetail(StravaObject):
     def __init__(self, **kwargs):
         super(SegmentDetail, self).__init__(**kwargs)
         self._effort = kwargs['effort']
+        self._attr = self.load('/segments/%s' % self._effort, 'segment')
 
     @property
     def distance(self):
