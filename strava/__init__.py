@@ -16,6 +16,7 @@ BASE_API = 'https://www.strava.com/api/v3'
 from collections import defaultdict
 from datetime import date, timedelta
 import json
+from types import IntType
 
 try:
     import urllib2
@@ -174,8 +175,9 @@ class Activity(StravaObject):
     @property
     def segments(self):
         if not self._segments:
-            for effort in self._detail.segment_efforts:
-                self._segments.append(Segment(effort=effort))
+            for effort in self._detail['segment_efforts']:
+                self._segments.append(Segment(effort=effort, \
+                access_token=self.access_token))
         return self._segments
 
 
@@ -185,65 +187,11 @@ class ActivityDetail(StravaObject):
         super(ActivityDetail, self).__init__(**kwargs)
         self._attr = self.load('/activities/%s' % kwargs['id'], 'activity')
 
-    @property
-    def athlete(self):
-        return self._attr['athlete']['name']
-
-    @property
-    def athlete_id(self):
-        return self._attr['athlete']['id']
-
-    @property
-    def bike(self):
-        return self._attr['bike']['name']
-
-    @property
-    def bike_id(self):
-        return self._attr['bike']['id']
-
-    @property
-    def location(self):
-        return self._attr['location']
-
-    @property
-    def distance(self):
-        return self._attr['distance']
-
-    @property
-    def average_speed(self):
-        return self._attr['average_speed']
-
-    @property
-    def moving_time(self):
-        return self._attr['moving_time']
-
-    @property
-    def average_watts(self):
-        return self._attr['average_watts']
-
-    @property
-    def maximum_speed(self):
-        return self._attr['maximum_speed']
-
-    @property
-    def elevation_gain(self):
-        return self._attr['elevation_gain']
-
-    @property
-    def description(self):
-        return self._attr['description']
-
-    @property
-    def commute(self):
-        return self._attr['commute']
-
-    @property
-    def trainer(self):
-        return self._attr['trainer']
-
-    @property
-    def segment_efforts(self):
-        return self._attr['segment_efforts']
+    def __getitem__(self, key):
+        try:
+            return self._attr[key]
+        except KeyError:
+            raise APIError('Invalid key: {key}'.format(key=key))
 
 
 class Segment(StravaObject):
@@ -289,43 +237,26 @@ class SegmentDetail(StravaObject):
     def __init__(self, **kwargs):
         super(SegmentDetail, self).__init__(**kwargs)
         self._effort = kwargs['effort']
-        self._attr = self.load('/segments/%s' % self._effort, 'segment')
+        if type(kwargs['effort']) == IntType:
+            id = self._effort
+            self._attr = self.load('/segments/%s' % id, 'segment')
+        else:
+            id = self._effort['id']
+            self._attr = self.load('/segment_efforts/%s' % id, 'segment')
+
+    def __getitem__(self, key):
+        try:
+            return self._attr[key]
+        except KeyError:
+            raise APIError('Invalid key: {key}'.format(key=key))
 
     @property
-    def distance(self):
-        return self._effort['segment']['distance']
-
-    @property
-    def elapsed_time(self):
-        return self._effort['segment']['elapsed_time']
-
-    @property
-    def moving_time(self):
-        return self._effort['moving_time']
+    def elevations(self):
+        return (self._attr['elevation_low'],
+                self._attr['elevation_high'],
+                self._attr['total_elevation_gain'])
 
     @property
     def average_speed(self):
         return self._effort['segment']['distance'] / \
             self._effort['elapsed_time'] 
-
-    @property
-    def maximum_speed(self):
-        return self._effort['segment']['maximum_speed']
-
-    @property
-    def average_watts(self):
-        return self._effort['segment']['average_watts']
-
-    @property
-    def average_grade(self):
-        return self._segment['segment']['average_grade']
-
-    @property
-    def climb_category(self):
-        return self._segment['segment']['climb_category']
-
-    @property
-    def elevations(self):
-        return (self._segment['segment']['elevation_low'],
-                self._segment['segment']['elevation_high'],
-                self._segment['segment']['elevation_gain'])
