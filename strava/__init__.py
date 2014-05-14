@@ -23,6 +23,7 @@ try:
 except ImportError:
     import urllib
     urllib2 = False
+from urllib import urlencode
 
 
 class APIError(Exception):
@@ -38,7 +39,10 @@ class StravaObject(object):
             self.access_token = kwargs.get('access_token')
 
     #noinspection PyUnresolvedReferences
-    def load(self, url, key=None):
+    def load(self, url, key=None, params=None):
+        if params:
+            url = '{url}?{params}'.format(url=url,
+                params=urlencode(params, True))
         headers = {'Authorization':
             'Bearer {access_token}'.format(access_token=self.access_token)}
         if urllib2:
@@ -92,16 +96,20 @@ class Athlete(StravaObject):
             url = '/'.join(self._url, id)
         return self.load(url)
 
-    def activities(self, start_date=None, offset=None):
-        # before, after, page, per_page
+    def activities(self, **kwargs):
+        params = {}
+        if 'page' in kwargs:
+            params['page'] = kwargs.pop('page')
+        if 'per_page' in kwargs:
+            params['per_page'] = kwargs.pop('per_page')
+        if 'before' in kwargs:
+            params['before'] = kwargs.pop('before')
+        if 'after' in kwargs:
+            params['after'] = kwargs.pop('after')
+
         out = []
 
-        #if start_date:
-        #    url += "&startDate=%s" % start_date.isoformat()
-        #if offset:
-        #    url += "&offset=%s" % offset
-            
-        for activity in self.load(self._url + '/activities'):
+        for activity in self.load(self._url + '/activities', params=params):
             out.append(Activity(id=activity['id'], name=activity['name'],
                 access_token=self.access_token))
 
