@@ -165,7 +165,7 @@ class Activity(StravaObject):
     def __init__(self, **kwargs):
         super(Activity, self).__init__(**kwargs)
         self._id = kwargs['id']
-        self._name = kwargs['name']
+        self._name = kwargs.get('name', '')
         self._detail = None
         self._segments = []
         
