@@ -9,6 +9,7 @@ on youtube to correspond to a video
 import ConfigParser
 import datetime
 import os
+import re
 import sys
 
 from strava import Activity
@@ -51,8 +52,18 @@ if __name__ == '__main__':
             'strava.cfg')))
 
     if len(sys.argv) == 2:
+        activity = sys.argv[1]
         try:
-            display_activity(sys.argv[1])
+            activity = int(activity)
+        except ValueError:
+            search = re.search('(\d+)$', activity)
+            if search:
+                activity = search.group(0)
+            else:
+                print 'invalid activity id or url'
+                sys.exit()
+        try:
+            display_activity(activity)
         except KeyboardInterrupt:
             sys.exit()
     else:
