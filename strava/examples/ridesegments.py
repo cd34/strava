@@ -30,7 +30,8 @@ def display_activity(id, time_correction=5):
     we need to convert that to get imperial measurements.
     """
 
-    print('Ride name: {name}'.format(name=activity.detail['name']))
+    print('Ride name: {name}'.format(name=activity.detail['name'] \
+        .replace('>','')))
     print('Strava URL: http://www.strava.com/activities/{id}' \
         .format(id=activity.detail['id']))
     print('')
@@ -43,7 +44,7 @@ def display_activity(id, time_correction=5):
         segment_delta = str(segment_start_time - activity_start_time - \
             datetime.timedelta(seconds=5))
         print('{time} - {segment}'.format(time=segment_delta,
-            segment=segment['name']))
+            segment=segment['name'].replace('>','').encode('utf-8')))
 
 if __name__ == '__main__':
     config = ConfigParser.ConfigParser()

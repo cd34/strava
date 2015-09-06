@@ -87,16 +87,17 @@ class Athlete(StravaObject):
             self.access_token = kwargs.get('access_token')
         self._url = '/athlete'
 
-    @property
     def athlete(self, id=None):
         # allowed to look at other athletes, cannot list other
         # athlete activities
         url = self._url
         if id:
-            url = '/'.join(self._url, id)
+            self._url = '/athletes'
+            url = '/'.join([self._url, str(id)])
         return self.load(url)
 
     def activities(self, **kwargs):
+        self._url = '/activities'
         params = {}
         if 'page' in kwargs:
             params['page'] = kwargs.pop('page')
@@ -106,10 +107,12 @@ class Athlete(StravaObject):
             params['before'] = kwargs.pop('before')
         if 'after' in kwargs:
             params['after'] = kwargs.pop('after')
+        if 'following' in kwargs:
+            self._url += '/following'
 
         out = []
 
-        for activity in self.load(self._url + '/activities', params=params):
+        for activity in self.load(self._url, params=params):
             out.append(Activity(id=activity['id'], name=activity['name'],
                 access_token=self.access_token))
 
